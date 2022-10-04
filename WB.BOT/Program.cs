@@ -11,5 +11,7 @@ public class Program
         parser.ReadData();
 
         Console.WriteLine(parser.GenerateReportIncomeByArticul());
+
+        parser.GenerateReportIncomeByArticulToFile();
     }
 }

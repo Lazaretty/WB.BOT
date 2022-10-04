@@ -61,12 +61,16 @@ public class DataParser
             var result = isSell ? income : -1 * income;
 
             var barcode = Worksheet.Cells[i, ColumnsNames[Constants.ColumnNames.Barcode]].Value.ToString();
+            
+            decimal.TryParse(Worksheet.Cells[i, ColumnsNames[Constants.ColumnNames.DeleveryFee]].Value.ToString(),
+                out var deliveryFee);
 
             var saleInfo = new SaleInfo()
             {
                 IsSell = isSell,
                 Income = result,
-                Barcode = barcode
+                Barcode = barcode,
+                DeliveryFee = deliveryFee
             };
 
             if (TotalIncome.ContainsKey(articul))
@@ -90,21 +94,65 @@ public class DataParser
         var result = "Articul : Income" + Environment.NewLine;
 
         decimal sum = 0;
+        decimal delivery = 0;
         
         foreach (var value in TotalIncome)
         {
             var sumByArticul = value.Value.Sum(x => x.Income);
+            var deliveryByArticul = value.Value.Sum(x => x.DeliveryFee);
 
             sum += sumByArticul;
+            delivery += deliveryByArticul;
             
-            result += $"{value.Key} : {sumByArticul}" + Environment.NewLine;
+            result += $"{value.Key} : {sumByArticul - deliveryByArticul}" + Environment.NewLine;
         }
-
-        result += $"Total income: {sum}";
+        
+        result += $"Total income: {sum - delivery}";
         
         return result;
     }
 
+    public void GenerateReportIncomeByArticulToFile()
+    {
+        
+        // initiate an instance of Workbook
+        var book = new Aspose.Cells.Workbook();
+        // access first (default) worksheet
+        var sheet = book.Worksheets[0];
+        // access CellsCollection of first worksheet
+        var cells = sheet.Cells;
+
+        cells[0,0].Value= "Articul";
+        cells[0,1].Value= "Income";
+        cells[0,2].Value= "Taxes";
+        
+        decimal sum = 0;
+        decimal delivery = 0;
+
+        var i = 1;
+
+        foreach (var value in TotalIncome)
+        {
+            var sumByArticul = value.Value.Sum(x => x.Income);
+            var deliveryByArticul = value.Value.Sum(x => x.DeliveryFee);
+            
+            sum += sumByArticul;
+            delivery += deliveryByArticul;
+            
+            cells[i, 0].Value = value.Key;
+            cells[i, 1].Value = sumByArticul - deliveryByArticul;
+            cells[i, 2].Formula = "="
+
+            i++;
+        }
+        
+        cells[i,0].Value = "Total income";
+        cells[i,1].Value = sum - delivery;
+        
+        // save spreadsheet to disc
+        book.Save("output.xlsx", SaveFormat.Xlsx);
+    }
+    
     private int GetColumnByName(string columnName)
     {
         for (var i = 0; i < Columns; i++)
@@ -116,5 +164,10 @@ public class DataParser
         }
 
         return -1;
+    }
+
+    private string IntegerToExcelColumn(int integer)
+    {
+        
     }
 }

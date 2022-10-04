@@ -7,4 +7,6 @@ public class SaleInfo
     public bool IsSell { get; set; }
 
     public string Barcode { get; set; }
+    
+    public decimal DeliveryFee { get; set; }
 }
