@@ -65,7 +65,7 @@ public class DataParser
             var saleInfo = new SaleInfo()
             {
                 IsSell = isSell,
-                Income = income,
+                Income = result,
                 Barcode = barcode
             };
 
@@ -89,12 +89,18 @@ public class DataParser
     {
         var result = "Articul : Income" + Environment.NewLine;
 
+        decimal sum = 0;
+        
         foreach (var value in TotalIncome)
         {
-            result += $"{value.Key} : {value.Value.Sum(x => x.Income)}" + Environment.NewLine;
+            var sumByArticul = value.Value.Sum(x => x.Income);
+
+            sum += sumByArticul;
+            
+            result += $"{value.Key} : {sumByArticul}" + Environment.NewLine;
         }
 
-        result += $"Total income: {TotalIncome.SelectMany(x => x.Value).Sum(x => x.Income)}";
+        result += $"Total income: {sum}";
         
         return result;
     }
