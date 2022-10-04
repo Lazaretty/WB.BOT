@@ -114,7 +114,6 @@ public class DataParser
 
     public void GenerateReportIncomeByArticulToFile()
     {
-        
         // initiate an instance of Workbook
         var book = new Aspose.Cells.Workbook();
         // access first (default) worksheet
@@ -125,6 +124,7 @@ public class DataParser
         cells[0,0].Value= "Articul";
         cells[0,1].Value= "Income";
         cells[0,2].Value= "Taxes";
+        cells[0,3].Value= "Income after taxes";
         
         decimal sum = 0;
         decimal delivery = 0;
@@ -133,15 +133,35 @@ public class DataParser
 
         foreach (var value in TotalIncome)
         {
-            var sumByArticul = value.Value.Sum(x => x.Income);
-            var deliveryByArticul = value.Value.Sum(x => x.DeliveryFee);
+            if (string.IsNullOrEmpty(value.Key))
+            {
+                foreach (var saleInfo in value.Value.GroupBy(x => x.Barcode))
+                {
+                    var sumByBarcode = value.Value.Sum(x => x.Income);
+                    var deliveryByBarcode = value.Value.Sum(x => x.DeliveryFee);
+
+                    sum += sumByBarcode;
+                    delivery += deliveryByBarcode;
+                    
+                    cells[i, 0].Value = saleInfo.Key;
+                    cells[i, 1].Value = sumByBarcode - deliveryByBarcode;
+                    cells[i, 2].Formula = $"={IntegerToExcelColumn(1)}{i+1}*H3/100";
+                    cells[i, 3].Formula = $"={IntegerToExcelColumn(1)}{i+1}-{IntegerToExcelColumn(2)}{i+1}";
+                }
+            }
+            else
+            {
+                var sumByArticul = value.Value.Sum(x => x.Income);
+                var deliveryByArticul = value.Value.Sum(x => x.DeliveryFee);
             
-            sum += sumByArticul;
-            delivery += deliveryByArticul;
-            
-            cells[i, 0].Value = value.Key;
-            cells[i, 1].Value = sumByArticul - deliveryByArticul;
-            cells[i, 2].Formula = "="
+                sum += sumByArticul;
+                delivery += deliveryByArticul;
+                
+                cells[i, 0].Value = value.Key;
+                cells[i, 1].Value = sumByArticul - deliveryByArticul;
+                cells[i, 2].Formula = $"={IntegerToExcelColumn(1)}{i+1}*H3/100";
+                cells[i, 3].Formula = $"={IntegerToExcelColumn(1)}{i+1}-{IntegerToExcelColumn(2)}{i+1}";
+            }
 
             i++;
         }
@@ -149,6 +169,9 @@ public class DataParser
         cells[i,0].Value = "Total income";
         cells[i,1].Value = sum - delivery;
         
+        cells["G3"].Value = "Tax rate";
+        cells["H3"].Value = 6;
+
         // save spreadsheet to disc
         book.Save("output.xlsx", SaveFormat.Xlsx);
     }
@@ -168,6 +191,8 @@ public class DataParser
 
     private string IntegerToExcelColumn(int integer)
     {
-        
+        var multiplicator = integer / 26;
+
+        return ((char)('A' + integer)).ToString();
     }
 }
