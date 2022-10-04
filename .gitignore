@@ -1,0 +1,8 @@
+**/.flattened-pom.xml
+.idea
+Java/pmi-esb-mgt-webapp/overlays
+**/obj
+**/bin
+.vs
+**/packages
+PMI.RestService/PMI.RestService.sln.DotSettings.user
