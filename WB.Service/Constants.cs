@@ -1,4 +1,4 @@
-﻿namespace WB.BOT;
+﻿namespace WB.Service;
 
 public static class Constants
 {

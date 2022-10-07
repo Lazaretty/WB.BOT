@@ -1,4 +1,4 @@
-﻿namespace WB.BOT;
+﻿namespace WB.Service.Models;
 
 public class SaleInfo
 {
