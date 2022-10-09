@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Examples.WebHook.Services;
 using WB.Service.Models;
@@ -29,6 +31,8 @@ namespace WB.Telegram.API
             services.AddLogging();
 
             services.AddControllers();
+            
+            services.AddHealthChecks();
         }
 
 
@@ -36,6 +40,19 @@ namespace WB.Telegram.API
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
             IHostApplicationLifetime applicationLifetime)
         {
+            app.UseHealthChecks(new PathString("http://localhost:8443") + "healthCheck", new HealthCheckOptions
+            {
+                ResponseWriter = async (context, report) =>
+                {
+                    await context.Response.WriteAsync(
+                        JsonConvert.SerializeObject(
+                            new
+                            {
+                                result = "KOSMOLET Service Started"
+                            }));
+                }
+            });
+            
             app.UseRouting();
             app.UseCors();
             

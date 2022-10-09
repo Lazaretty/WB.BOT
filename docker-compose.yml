@@ -10,13 +10,13 @@ services:
     environment: 
     
       - ASPNETCORE_ENVIRONMENT=DevelopmentDocker
-      - ASPNETCORE_URLS=http://*:8080
+      - ASPNETCORE_URLS=http://*:80
     build:
       context: ./
       dockerfile: ./Dockerfile.backend
     restart: unless-stopped
     ports:
-      - target: 8080
-        published: 8080
+      - target: 8443
+        published: 8443
         protocol: tcp
         mode: host
