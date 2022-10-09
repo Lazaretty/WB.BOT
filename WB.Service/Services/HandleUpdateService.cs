@@ -4,6 +4,8 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineQueryResults;
 using Telegram.Bot.Types.InputFiles;
 using Telegram.Bot.Types.ReplyMarkups;
+using WB.Service.Services;
+using File = System.IO.File;
 
 namespace Telegram.Bot.Examples.WebHook.Services;
 
@@ -52,7 +54,12 @@ public class HandleUpdateService
     {
         //_logger.LogInformation("Receive message type: {MessageType}", message.Type);
         if (message.Type != MessageType.Text)
-            return;
+        {
+            if (message.Document is not null)
+            {
+                await _botClient.DownloadFileAsync("./0.xlxs", File.Create("./0.xlxs"));
+            }
+        }
 
         var action = message.Text!.Split(' ')[0] switch
         {
@@ -61,6 +68,7 @@ public class HandleUpdateService
             "/remove"   => RemoveKeyboard(_botClient, message),
             "/photo"    => SendFile(_botClient, message),
             "/request"  => RequestContactAndLocation(_botClient, message),
+            "/calc"     => Calculate(_botClient, message),
             _           => Usage(_botClient, message)
         };
         Message sentMessage = await action;
@@ -148,14 +156,24 @@ public class HandleUpdateService
                                                   replyMarkup: RequestReplyKeyboard);
         }
 
+        static async Task<Message> Calculate(ITelegramBotClient bot, Message message)
+        {
+            string FileName = @"C:\Users\skvor\Desktop\0.xlsx";
+        
+            var parser = new DataParser(FileName, 0);
+            parser.ReadAndCalculate();
+
+            var file = parser.GenerateReportFromResultDataIncomeByArticulToStream();
+
+            file.Position = 0;
+            
+            return await bot.SendDocumentAsync(chatId: message.Chat.Id, new InputOnlineFile(file, "output.xls"));
+        }
+
         static async Task<Message> Usage(ITelegramBotClient bot, Message message)
         {
             const string usage = "Usage:\n" +
-                                 "/inline   - send inline keyboard\n" +
-                                 "/keyboard - send custom keyboard\n" +
-                                 "/remove   - remove custom keyboard\n" +
-                                 "/photo    - send a photo\n" +
-                                 "/request  - request location or contact";
+                                 "/calc     - calculate report";
 
             return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
                                                   text: usage,

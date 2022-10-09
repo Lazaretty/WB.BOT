@@ -149,6 +149,43 @@ public class DataParser
         book.Save("output.xlsx", SaveFormat.Xlsx);
     }
     
+    public MemoryStream GenerateReportFromResultDataIncomeByArticulToStream()
+    {
+        var book = new Workbook();
+        var sheet = book.Worksheets[0];
+        var cells = sheet.Cells;
+        
+        cells[0,0].Value= "Articul";
+        cells[0,1].Value= "Income";
+        cells[0,2].Value= "Taxes";
+        cells[0,3].Value= "Income after taxes";
+
+        var i = 1;
+
+        foreach (var value in ResultData)
+        {
+            var sumByArticul = value.Value.Income;
+
+            cells[i, 0].Value = value.Key;
+            cells[i, 1].Value = sumByArticul;
+            cells[i, 2].Formula = $"={IntegerToExcelColumn(1)}{i + 1}*H3/100";
+            cells[i, 3].Formula = $"={IntegerToExcelColumn(1)}{i + 1}-{IntegerToExcelColumn(2)}{i + 1}";
+
+            i++;
+        }
+
+        cells[i,0].Value = "Total:";
+        cells[i,1].Formula = $"=SUM({IntegerToExcelColumn(1)}{2}:{IntegerToExcelColumn(1)}{i})";
+        cells[i,2].Formula = $"=SUM({IntegerToExcelColumn(2)}{2}:{IntegerToExcelColumn(2)}{i})";
+        cells[i,3].Formula = $"=SUM({IntegerToExcelColumn(3)}{2}:{IntegerToExcelColumn(3)}{i})";
+
+        cells["G3"].Value = "Tax rate";
+        cells["H3"].Value = 6;
+
+        // save spreadsheet to disc
+        return book.SaveToStream();
+    }
+    
      /*
       
       public void GenerateReportIncomeByArticulToFile()

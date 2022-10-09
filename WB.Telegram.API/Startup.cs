@@ -36,27 +36,22 @@ namespace WB.Telegram.API
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
             IHostApplicationLifetime applicationLifetime)
         {
+            app.UseRouting();
+            app.UseCors();
+            
             app.UseEndpoints(endpoints =>
             {
-                app.UseRouting();
-                app.UseCors();
-                
-                app.UseEndpoints(endpoints =>
-                {
-                    var botConfig = Configuration.GetSection("BotConfiguration").Get<TelegramConfiguration>();
-                    // Configure custom endpoint per Telegram API recommendations:
-                    // https://core.telegram.org/bots/api#setwebhook
-                    // If you'd like to make sure that the Webhook request comes from Telegram, we recommend
-                    // using a secret path in the URL, e.g. https://www.example.com/<token>.
-                    // Since nobody else knows your bot's token, you can be pretty sure it's us.
-                    var token = botConfig.BotToken;
-                    endpoints.MapControllerRoute(name: "tgwebhook",
-                        pattern: $"bot/{token}",
-                        new { controller = "Webhook", action = "Post" });
-
-                    endpoints.MapControllers();
-                });
-
+                var botConfig = Configuration.GetSection("BotConfiguration").Get<TelegramConfiguration>();
+                // Configure custom endpoint per Telegram API recommendations:
+                // https://core.telegram.org/bots/api#setwebhook
+                // If you'd like to make sure that the Webhook request comes from Telegram, we recommend
+                // using a secret path in the URL, e.g. https://www.example.com/<token>.
+                // Since nobody else knows your bot's token, you can be pretty sure it's us.
+                var token = botConfig.BotToken;
+                endpoints.MapControllerRoute(name: "tgwebhook",
+                    pattern: $"bot/{token}",
+                    new { controller = "Webhook", action = "Post" });
+                endpoints.MapControllers();
             });
         }
     }
