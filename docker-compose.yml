@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  server:
+    image: wb_bot:latest
+    container_name: wb.bot
+    hostname: wb_server
+    env_file:
+      - .env
+    environment: 
+    
+      - ASPNETCORE_ENVIRONMENT=DevelopmentDocker
+      - ASPNETCORE_URLS=http://*:8080
+    build:
+      context: ./
+      dockerfile: ./Dockerfile.backend
+    restart: unless-stopped
+    ports:
+      - target: 8080
+        published: 8080
+        protocol: tcp
+        mode: host

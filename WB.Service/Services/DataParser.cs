@@ -32,7 +32,7 @@ public class DataParser
     {
         var workbook = new Workbook(filePath);
 
-        Worksheet = workbook.Worksheets[0];
+        Worksheet = workbook.Worksheets[workSheet];
 
         Rows = Worksheet.Cells.Rows.Count;
 
@@ -50,6 +50,30 @@ public class DataParser
             throw new Exception($"Some columns are not found: {string.Join(',', notFoundColumns)}");
         }
     }
+    
+    public DataParser(Stream fileStream, int workSheet)
+    {
+        var workbook = new Workbook(fileStream);
+
+        Worksheet = workbook.Worksheets[workSheet];
+
+        Rows = Worksheet.Cells.Rows.Count;
+
+        Columns = Worksheet.Cells.Columns.Count;
+
+        ColumnsNames = GenerateExcelColumns(NestedColumns);
+
+        //TotalIncome = new Dictionary<string, List<SaleInfo>>();
+
+        ResultData = new Dictionary<string, CalculationInfo>();
+
+        if (ColumnsNames.Values.All(x => x != -1)) return;
+        {
+            var notFoundColumns = ColumnsNames.Where(x => x.Value == -1).Select(x => x.Key).ToArray();
+            throw new Exception($"Some columns are not found: {string.Join(',', notFoundColumns)}");
+        }
+    }
+    
     public void ReadAndCalculate()
     {
         for (var i = 1; i < Rows; i++)

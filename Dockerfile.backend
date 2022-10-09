@@ -1,0 +1,21 @@
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
+WORKDIR /app
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US.UTF-8
+EXPOSE 8080
+
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+WORKDIR /src
+COPY ["WB.Telegram.API/WB.Telegram.API.csproj", "WB.Telegram.API/"]
+RUN dotnet restore "WB.Telegram.API/WB.Telegram.API.csproj"
+COPY . .
+WORKDIR "/src/WB.Telegram.API"
+RUN dotnet build "WB.Telegram.API.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "WB.Telegram.API.csproj" -c Release -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "WB.Telegram.API.dll"]

@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -55,9 +56,37 @@ public class HandleUpdateService
         //_logger.LogInformation("Receive message type: {MessageType}", message.Type);
         if (message.Type != MessageType.Text)
         {
+            //return;
             if (message.Document is not null)
             {
-                await _botClient.DownloadFileAsync("./0.xlxs", File.Create("./0.xlxs"));
+                var file = await _botClient.GetFileAsync(message.Document.FileId);
+                var ms = new MemoryStream();
+                await _botClient.DownloadFileAsync(file.FilePath, ms);
+                
+                using(var zip = new ZipArchive(ms, ZipArchiveMode.Read))
+                {
+                    foreach(var entry in zip.Entries)
+                    {
+                        using(var stream = entry.Open())
+                        {
+                            var parser = new DataParser(stream, 0);
+                            parser.ReadAndCalculate();
+
+                            var resulrFile = parser.GenerateReportFromResultDataIncomeByArticulToStream();
+
+                            var resultMessage = parser.GenerateReportIncomeByArticul();
+
+                            resulrFile.Position = 0;
+
+                            await _botClient.SendTextMessageAsync(chatId: message.Chat.Id, resultMessage);
+                            
+                            await _botClient.SendDocumentAsync(chatId: message.Chat.Id, new InputOnlineFile(resulrFile, "result.xls"));
+                        }
+                    }
+                }
+
+                ms.Close();
+                ms.Dispose();
             }
         }
 
@@ -131,14 +160,19 @@ public class HandleUpdateService
 
         static async Task<Message> SendFile(ITelegramBotClient bot, Message message)
         {
-            await bot.SendChatActionAsync(message.Chat.Id, ChatAction.UploadPhoto);
+            await bot.SendChatActionAsync(message.Chat.Id, ChatAction.UploadDocument);
+            
+            string FileName = @"C:\Users\skvor\Desktop\0.xlsx";
+        
+            var parser = new DataParser(FileName, 0);
+            parser.ReadAndCalculate();
 
-            const string filePath = @"Files/tux.png";
-            using FileStream fileStream = new(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            var fileName = filePath.Split(Path.DirectorySeparatorChar).Last();
+            var file = parser.GenerateReportFromResultDataIncomeByArticulToStream();
 
-            return await bot.SendPhotoAsync(chatId: message.Chat.Id,
-                                            photo: new InputOnlineFile(fileStream, fileName),
+            file.Position = 0;
+            
+            return await bot.SendDocumentAsync(chatId: message.Chat.Id,
+                                            document: new InputOnlineFile(file, "result.xls"),
                                             caption: "Nice Picture");
         }
 
