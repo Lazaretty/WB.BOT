@@ -206,8 +206,7 @@ public class HandleUpdateService
 
         static async Task<Message> Usage(ITelegramBotClient bot, Message message)
         {
-            const string usage = "Usage:\n" +
-                                 "/calc     - calculate report";
+            const string usage = "Отправьте сгенерированный отчет (в формате zip) из личного кабинета WB, чтобы получить детализацию";
 
             return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
                                                   text: usage,

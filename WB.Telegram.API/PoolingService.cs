@@ -1,5 +1,6 @@
 ﻿using Telegram.Bot;
 using Telegram.Bot.Examples.WebHook.Services;
+using Telegram.Bot.Types;
 using WB.Service.Models;
 
 namespace WB.Telegram.API;
@@ -28,15 +29,27 @@ public class PoolingService : BackgroundService
         
         await botClient.DeleteWebhookAsync(cancellationToken: stoppingToken);
         
+        var offset = -1;
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                var updateds = await botClient.GetUpdatesAsync(cancellationToken: stoppingToken);
-
-                foreach (var update in updateds)
+                Update[] updates;
+                
+                if(offset == -1)
+                {
+                    updates = await botClient.GetUpdatesAsync(cancellationToken: stoppingToken);
+                }
+                else
+                {
+                    updates = await botClient.GetUpdatesAsync(cancellationToken: stoppingToken, offset: offset + 1);
+                }
+                
+                foreach (var update in updates)
                 {
                     await handleService.EchoAsync(update);
+                    offset = update.Id;
                 }
             }
             catch (Exception e)
