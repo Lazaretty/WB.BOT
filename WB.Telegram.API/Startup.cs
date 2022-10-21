@@ -22,11 +22,20 @@ namespace WB.Telegram.API
 
             services.AddScoped<HandleUpdateService>();
             
-            services.AddHostedService<ConfigureWebhook>();
+            //services.AddHostedService<ConfigureWebhook>();
+            services.AddHostedService<PoolingService>();
 
+            /*
             services.AddHttpClient("tgwebhook")
                 .AddTypedClient<ITelegramBotClient>(httpClient =>
                     new TelegramBotClient(botConfig.BotToken, httpClient));
+            */
+            services.AddHttpClient("telegram_bot_client")
+                .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
+                {
+                    TelegramBotClientOptions options = new(botConfig.BotToken);
+                    return new TelegramBotClient(options, httpClient);
+                });
 
             services.AddLogging();
 
