@@ -10,7 +10,7 @@ services:
     environment: 
     
       - ASPNETCORE_ENVIRONMENT=DevelopmentDocker
-      - ASPNETCORE_URLS=http://*:80
+      - ASPNETCORE_URLS=http://*:8443
     build:
       context: ./
       dockerfile: ./Dockerfile.backend

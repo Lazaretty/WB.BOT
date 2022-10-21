@@ -40,7 +40,7 @@ namespace WB.Telegram.API
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
             IHostApplicationLifetime applicationLifetime)
         {
-            app.UseHealthChecks(new PathString("http://localhost:8443") + "healthCheck", new HealthCheckOptions
+            app.UseHealthChecks("/healthCheck", new HealthCheckOptions
             {
                 ResponseWriter = async (context, report) =>
                 {
@@ -48,7 +48,7 @@ namespace WB.Telegram.API
                         JsonConvert.SerializeObject(
                             new
                             {
-                                result = "KOSMOLET Service Started"
+                                result = "wb.bot is running"
                             }));
                 }
             });
