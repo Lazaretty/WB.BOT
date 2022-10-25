@@ -14,9 +14,23 @@ services:
     build:
       context: ./
       dockerfile: ./Dockerfile.backend
+    depends_on:
+      - db
     restart: unless-stopped
     ports:
       - target: 8443
         published: 8443
+        protocol: tcp
+        mode: host
+  db:
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=WB
+      - POSTGRES_USER=postgres
+    ports:
+      - target: 5432
+        published: 5433
         protocol: tcp
         mode: host

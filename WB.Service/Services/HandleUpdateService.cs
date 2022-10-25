@@ -2,23 +2,30 @@ using System.IO.Compression;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InlineQueryResults;
 using Telegram.Bot.Types.InputFiles;
 using Telegram.Bot.Types.ReplyMarkups;
+using WB.Common.Enums;
+using WB.DAL.Models;
+using WB.DAL.Repositories;
 using WB.Service.Services;
-using File = System.IO.File;
+using User = WB.DAL.Models.User;
 
 namespace Telegram.Bot.Examples.WebHook.Services;
 
 public class HandleUpdateService
 {
     private readonly ITelegramBotClient _botClient;
+
+    private readonly UserRepository _userRepository;
+    
+    private readonly ChatStateRepository _chatStateRepository;
     //private readonly ILogger<HandleUpdateService> _logger;
 
-    public HandleUpdateService(ITelegramBotClient botClient)//, ILogger<HandleUpdateService> logger)
+    public HandleUpdateService(ITelegramBotClient botClient, UserRepository userRepository, ChatStateRepository chatStateRepository)//, ILogger<HandleUpdateService> logger)
     {
         _botClient = botClient;
-        //_logger = logger;
+        _userRepository = userRepository;
+        _chatStateRepository = chatStateRepository;
     }
 
     public async Task EchoAsync(Update update)
@@ -32,10 +39,6 @@ public class HandleUpdateService
             // UpdateType.PreCheckoutQuery:
             // UpdateType.Poll:
             UpdateType.Message            => BotOnMessageReceived(update.Message!),
-            UpdateType.EditedMessage      => BotOnMessageReceived(update.EditedMessage!),
-            UpdateType.CallbackQuery      => BotOnCallbackQueryReceived(update.CallbackQuery!),
-            UpdateType.InlineQuery        => BotOnInlineQueryReceived(update.InlineQuery!),
-            UpdateType.ChosenInlineResult => BotOnChosenInlineResultReceived(update.ChosenInlineResult!),
             _                             => UnknownUpdateHandlerAsync(update)
         };
 
@@ -92,168 +95,55 @@ public class HandleUpdateService
 
         var action = message.Text!.Split(' ')[0] switch
         {
-            "/inline"   => SendInlineKeyboard(_botClient, message),
-            "/keyboard" => SendReplyKeyboard(_botClient, message),
-            "/remove"   => RemoveKeyboard(_botClient, message),
-            "/photo"    => SendFile(_botClient, message),
-            "/request"  => RequestContactAndLocation(_botClient, message),
-            "/calc"     => Calculate(_botClient, message),
+            "/start"   => OnStart(_botClient, message),
             _           => Usage(_botClient, message)
         };
         Message sentMessage = await action;
         //_logger.LogInformation("The message was sent with id: {SentMessageId}", sentMessage.MessageId);
 
         // Send inline keyboard
-        // You can process responses in BotOnCallbackQueryReceived handler
-        static async Task<Message> SendInlineKeyboard(ITelegramBotClient bot, Message message)
-        {
-            await bot.SendChatActionAsync(message.Chat.Id, ChatAction.Typing);
-
-            // Simulate longer running task
-            await Task.Delay(500);
-
-            InlineKeyboardMarkup inlineKeyboard = new(
-                new[]
-                {
-                    // first row
-                    new []
-                    {
-                        InlineKeyboardButton.WithCallbackData("1.1", "11"),
-                        InlineKeyboardButton.WithCallbackData("1.2", "12"),
-                    },
-                    // second row
-                    new []
-                    {
-                        InlineKeyboardButton.WithCallbackData("2.1", "21"),
-                        InlineKeyboardButton.WithCallbackData("2.2", "22"),
-                    },
-                });
-
-            return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
-                                                  text: "Choose",
-                                                  replyMarkup: inlineKeyboard);
-        }
-
-        static async Task<Message> SendReplyKeyboard(ITelegramBotClient bot, Message message)
-        {
-            ReplyKeyboardMarkup replyKeyboardMarkup = new(
-                new[]
-                {
-                        new KeyboardButton[] { "1.1", "1.2" },
-                        new KeyboardButton[] { "2.1", "2.2" },
-                })
-                {
-                    ResizeKeyboard = true
-                };
-
-            return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
-                                                  text: "Choose",
-                                                  replyMarkup: replyKeyboardMarkup);
-        }
-
-        static async Task<Message> RemoveKeyboard(ITelegramBotClient bot, Message message)
-        {
-            return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
-                                                  text: "Removing keyboard",
-                                                  replyMarkup: new ReplyKeyboardRemove());
-        }
-
-        static async Task<Message> SendFile(ITelegramBotClient bot, Message message)
-        {
-            await bot.SendChatActionAsync(message.Chat.Id, ChatAction.UploadDocument);
-            
-            string FileName = @"C:\Users\skvor\Desktop\0.xlsx";
-        
-            var parser = new DataParser(FileName, 0);
-            parser.ReadAndCalculate();
-
-            var file = parser.GenerateReportFromResultDataIncomeByArticulToStream();
-
-            file.Position = 0;
-            
-            return await bot.SendDocumentAsync(chatId: message.Chat.Id,
-                                            document: new InputOnlineFile(file, "result.xls"),
-                                            caption: "Nice Picture");
-        }
-
-        static async Task<Message> RequestContactAndLocation(ITelegramBotClient bot, Message message)
-        {
-            ReplyKeyboardMarkup RequestReplyKeyboard = new(
-                new[]
-                {
-                    KeyboardButton.WithRequestLocation("Location"),
-                    KeyboardButton.WithRequestContact("Contact"),
-                });
-
-            return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
-                                                  text: "Who or Where are you?",
-                                                  replyMarkup: RequestReplyKeyboard);
-        }
-
-        static async Task<Message> Calculate(ITelegramBotClient bot, Message message)
-        {
-            string FileName = @"C:\Users\skvor\Desktop\0.xlsx";
-        
-            var parser = new DataParser(FileName, 0);
-            parser.ReadAndCalculate();
-
-            var file = parser.GenerateReportFromResultDataIncomeByArticulToStream();
-
-            file.Position = 0;
-            
-            return await bot.SendDocumentAsync(chatId: message.Chat.Id, new InputOnlineFile(file, "output.xls"));
-        }
-
-        static async Task<Message> Usage(ITelegramBotClient bot, Message message)
-        {
-            const string usage = "Отправьте сгенерированный отчет (в формате zip) из личного кабинета WB, чтобы получить детализацию";
-
-            return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
-                                                  text: usage,
-                                                  replyMarkup: new ReplyKeyboardRemove());
-        }
+        // You can process responses in BotOnCallbackQueryReceived handle
     }
-
-    // Process Inline Keyboard callback data
-    private async Task BotOnCallbackQueryReceived(CallbackQuery callbackQuery)
+    
+    async Task<Message> OnStart(ITelegramBotClient bot, Message message)
     {
-        await _botClient.AnswerCallbackQueryAsync(
-            callbackQueryId: callbackQuery.Id,
-            text: $"Received {callbackQuery.Data}");
+        var welcomeMessage = "Привет, этот помогает отслеживать продажи товаров на WB." +  Environment.NewLine + "Давай приступим к настройке: пришли API ключ из личного кабинет WB";
 
-        await _botClient.SendTextMessageAsync(
-            chatId: callbackQuery.Message!.Chat.Id,
-            text: $"Received {callbackQuery.Data}");
+        if ((!await _userRepository.IsUserExists(message.Chat.Id)))
+        {
+            await _userRepository.Insert(new User()
+            {
+                UserChatId = message.Chat.Id,
+                IsActive = true,
+                ApiKey = string.Empty,
+                ChatState = new ChatState()
+                {
+                    UserChatId = message.Chat.Id,
+                    State = ChatSate.Configuration
+                }
+            });
+        }
+        return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
+            text: welcomeMessage);
     }
 
+    async Task<Message> Usage(ITelegramBotClient bot, Message message)
+    {
+        const string usage = "Отправьте сгенерированный отчет (в формате zip) из личного кабинета WB, чтобы получить детализацию";
+        return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
+            text: usage,
+            replyMarkup: new ReplyKeyboardRemove());
+    }
+    
+    async Task<Message> Usage2(ITelegramBotClient bot, Message message)
+    {
+        const string usage = "Отправьте сгенерированный отчет (в формате zip) из личного кабинета WB, чтобы получить детализацию";
+        return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
+            text: usage,
+            replyMarkup: new ReplyKeyboardRemove());
+    }
+    
     #region Inline Mode
-
-    private async Task BotOnInlineQueryReceived(InlineQuery inlineQuery)
-    {
-        //_logger.LogInformation("Received inline query from: {InlineQueryFromId}", inlineQuery.From.Id);
-
-        InlineQueryResult[] results = {
-            // displayed result
-            new InlineQueryResultArticle(
-                id: "3",
-                title: "TgBots",
-                inputMessageContent: new InputTextMessageContent(
-                    "hello"
-                )
-            )
-        };
-
-        await _botClient.AnswerInlineQueryAsync(inlineQueryId: inlineQuery.Id,
-                                                results: results,
-                                                isPersonal: true,
-                                                cacheTime: 0);
-    }
-
-    private Task BotOnChosenInlineResultReceived(ChosenInlineResult chosenInlineResult)
-    {
-        //_logger.LogInformation("Received inline result: {ChosenInlineResultId}", chosenInlineResult.ResultId);
-        return Task.CompletedTask;
-    }
 
     #endregion
 

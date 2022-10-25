@@ -4,6 +4,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WB.Service", "WB.Service\WB
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WB.Telegram.API", "WB.Telegram.API\WB.Telegram.API.csproj", "{994BEEFD-7537-4881-8F67-1270116F5C4C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WB.DAL", "WB.DAL\WB.DAL.csproj", "{EAF810F3-F7DB-4322-921A-ECDBEDF19881}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WB.Common", "WB.Common\WB.Common.csproj", "{59BF5AC2-EFD7-4B96-9372-27384B65557C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +22,13 @@ Global
 		{994BEEFD-7537-4881-8F67-1270116F5C4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{994BEEFD-7537-4881-8F67-1270116F5C4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{994BEEFD-7537-4881-8F67-1270116F5C4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EAF810F3-F7DB-4322-921A-ECDBEDF19881}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAF810F3-F7DB-4322-921A-ECDBEDF19881}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAF810F3-F7DB-4322-921A-ECDBEDF19881}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAF810F3-F7DB-4322-921A-ECDBEDF19881}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59BF5AC2-EFD7-4B96-9372-27384B65557C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59BF5AC2-EFD7-4B96-9372-27384B65557C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59BF5AC2-EFD7-4B96-9372-27384B65557C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59BF5AC2-EFD7-4B96-9372-27384B65557C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

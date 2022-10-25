@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Examples.WebHook.Services;
+using WB.DAL;
 using WB.Service.Models;
 
 namespace WB.Telegram.API
@@ -24,6 +26,8 @@ namespace WB.Telegram.API
             
             //services.AddHostedService<ConfigureWebhook>();
             services.AddHostedService<PoolingService>();
+            
+            //services.AddHostedService<SalesNotifyService>();
 
             /*
             services.AddHttpClient("tgwebhook")
@@ -42,6 +46,9 @@ namespace WB.Telegram.API
             services.AddControllers();
             
             services.AddHealthChecks();
+            
+            services.AddDALServices(Configuration);
+            
         }
 
 
@@ -64,6 +71,16 @@ namespace WB.Telegram.API
             
             app.UseRouting();
             app.UseCors();
+            
+            #region Migrate
+            using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            {
+                using (var context = serviceScope.ServiceProvider.GetService<WbContext>())
+                {
+                    context?.Database.Migrate();
+                }
+            }
+            #endregion
             
             app.UseEndpoints(endpoints =>
             {

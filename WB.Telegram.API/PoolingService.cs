@@ -1,6 +1,7 @@
 ﻿using Telegram.Bot;
 using Telegram.Bot.Examples.WebHook.Services;
 using Telegram.Bot.Types;
+using WB.DAL.Repositories;
 using WB.Service.Models;
 
 namespace WB.Telegram.API;
@@ -24,8 +25,11 @@ public class PoolingService : BackgroundService
     {
         using var scope = _services.CreateScope();
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
+        var userRepository = scope.ServiceProvider.GetRequiredService<UserRepository>();
+        var chatStateRepository = scope.ServiceProvider.GetRequiredService<ChatStateRepository>();
 
-        var handleService = new HandleUpdateService(botClient);
+
+        var handleService = new HandleUpdateService(botClient,userRepository,chatStateRepository);
         
         await botClient.DeleteWebhookAsync(cancellationToken: stoppingToken);
         
