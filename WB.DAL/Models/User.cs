@@ -6,6 +6,8 @@ public class User
     public long UserChatId { get; set; }
 
     public string ApiKey { get; set; }
+    
+    public DateTimeOffset? LastUpdate { get; set; }
 
     public bool IsActive { get; set; }
 

@@ -2,5 +2,6 @@
 
 public enum ChatSate
 {
-    Configuration
+    Configuration,
+    Default
 }

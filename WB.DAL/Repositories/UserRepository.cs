@@ -12,9 +12,9 @@ public class UserRepository
     }
     public WbContext Context { get; }
     
-    public async Task<User> GetAsync(int id)
+    public async Task<User> GetAsync(long id)
     {
-        var user = await Context.Users.FirstOrDefaultAsync(x => x.UserChatId == id);
+        var user = await Context.Users.Include(x=> x.ChatState).FirstOrDefaultAsync(x => x.UserChatId == id);
 
         if (user == null)
         {
@@ -32,9 +32,21 @@ public class UserRepository
     
     public async Task Insert(User user)
     {
+        user.LastUpdate = DateTimeOffset.UtcNow;
+        
         Context.Users.Add(user);
 
         await Context.SaveChangesAsync();
+    }
+    
+    public async Task Update(User user)
+    {
+        if (user == null)
+            throw new ArgumentNullException(nameof(user));
+
+        Context.Entry(user).State = EntityState.Modified;
+        await Context.SaveChangesAsync();
+        Context.Entry(user).State = EntityState.Detached;
     }
     
     public Task<bool> IsUserExists(long chatId)

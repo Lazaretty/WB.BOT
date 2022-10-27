@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -30,6 +31,7 @@ namespace WB.DAL.Migrations
                     UserId = table.Column<long>(type: "bigint", nullable: false),
                     UserChatId = table.Column<long>(type: "bigint", nullable: false),
                     ApiKey = table.Column<string>(type: "text", nullable: true),
+                    LastUpdate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>

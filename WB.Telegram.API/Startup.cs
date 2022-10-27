@@ -27,7 +27,7 @@ namespace WB.Telegram.API
             //services.AddHostedService<ConfigureWebhook>();
             services.AddHostedService<PoolingService>();
             
-            //services.AddHostedService<SalesNotifyService>();
+            services.AddHostedService<SalesNotifyService>();
 
             /*
             services.AddHttpClient("tgwebhook")

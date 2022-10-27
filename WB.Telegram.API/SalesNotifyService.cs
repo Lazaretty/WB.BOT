@@ -3,6 +3,7 @@ using Telegram.Bot.Examples.WebHook.Services;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using WB.DAL.Repositories;
+using WB.Service.Helper;
 using WB.Service.Models;
 using WB.Service.Services;
 
@@ -24,6 +25,8 @@ public class SalesNotifyService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await Task.Delay(5_000);
+        
         using var scope = _services.CreateScope();
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
         var repository = scope.ServiceProvider.GetRequiredService<UserRepository>();
@@ -37,13 +40,17 @@ public class SalesNotifyService : BackgroundService
 
                 foreach (var user in users)
                 {
-                    var sales = await wbAdapter.GetSales(user.ApiKey);
+                    var sales = await wbAdapter.GetSales(user.ApiKey, user.LastUpdate.Value);
+                    
                     foreach (var sale in sales)
                     {
                         await botClient.SendTextMessageAsync(chatId: user.UserChatId,
-                            text: sale.ToString(),
+                            text: sale.ToMessage(),
                             replyMarkup: new ReplyKeyboardRemove());
                     }
+                    
+                    user.LastUpdate = DateTimeOffset.UtcNow;
+                    await repository.Update(user);
                 }
                 
             }
