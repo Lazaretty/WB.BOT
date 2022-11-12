@@ -62,27 +62,49 @@ public class HandleUpdateService
                 var file = await _botClient.GetFileAsync(message.Document.FileId);
                 var ms = new MemoryStream();
                 await _botClient.DownloadFileAsync(file.FilePath, ms);
-                
-                using(var zip = new ZipArchive(ms, ZipArchiveMode.Read))
+
+                if (file.FilePath.EndsWith(".zip"))
                 {
-                    foreach(var entry in zip.Entries)
+                    using(var zip = new ZipArchive(ms, ZipArchiveMode.Read))
                     {
-                        using(var stream = entry.Open())
+                        foreach(var entry in zip.Entries)
                         {
-                            var parser = new DataParser(stream, 0);
-                            parser.ReadAndCalculate();
+                            using(var stream = entry.Open())
+                            {
+                                var parser = new DataParser(stream, 0);
+                                parser.ReadAndCalculate();
 
-                            var resulrFile = parser.GenerateReportFromResultDataIncomeByArticulToStream();
+                                var resulrFile = parser.GenerateReportFromResultDataIncomeByArticulToStream();
 
-                            var resultMessage = parser.GenerateReportIncomeByArticul();
+                                var resultMessage = parser.GenerateReportIncomeByArticul();
 
-                            resulrFile.Position = 0;
+                                resulrFile.Position = 0;
 
-                            await _botClient.SendTextMessageAsync(chatId: message.Chat.Id, resultMessage);
+                                await _botClient.SendTextMessageAsync(chatId: message.Chat.Id, resultMessage);
                             
-                            await _botClient.SendDocumentAsync(chatId: message.Chat.Id, new InputOnlineFile(resulrFile, "result.xls"));
+                                await _botClient.SendDocumentAsync(chatId: message.Chat.Id, new InputOnlineFile(resulrFile, "result.xls"));
+                            }
                         }
                     }
+                }
+
+                if (file.FilePath.EndsWith(".xlsx"))
+                {
+                    ms.Position = 0;
+                    
+                    var parser = new DataParser(ms, 0);
+                    parser.ReadAndCalculate();
+
+                    var resulrFile = parser.GenerateReportFromResultDataIncomeByArticulToStream();
+
+                    var resultMessage = parser.GenerateReportIncomeByArticul();
+
+                    resulrFile.Position = 0;
+
+                    await _botClient.SendTextMessageAsync(chatId: message.Chat.Id, resultMessage);
+                            
+                    await _botClient.SendDocumentAsync(chatId: message.Chat.Id, new InputOnlineFile(resulrFile, "result.xls"));
+
                 }
 
                 ms.Close();
