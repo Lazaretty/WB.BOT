@@ -26,6 +26,7 @@ public static class SaleHelper
         return $"{saleType}: " + Environment.NewLine + 
                $"Артикул : {sale.SupplierArticle}" + Environment.NewLine +
                $"Цена : {Math.Round(sale.TotalPrice*(1 - sale.DiscountPercent*1.0/100),1)}"+ Environment.NewLine +
+               $"Дата : {sale.Date.ToString("hh:mm dd.mm.yyy")}"+ Environment.NewLine +
                $"Ссылка : https://www.wildberries.ru/catalog/{sale.NmId}/detail.aspx";
     }
 }
