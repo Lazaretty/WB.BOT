@@ -8,4 +8,6 @@ public class Sale
     public string TechSize { get; set; }
     public int TotalPrice { get; set; }
     public int DiscountPercent { get; set; }
+    public int NmId { get; set; }
+    public string SaleID { get; set; }
 }

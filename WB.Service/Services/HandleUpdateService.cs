@@ -151,29 +151,27 @@ public class HandleUpdateService
 
     async Task<Message> Usage(ITelegramBotClient bot, Message message)
     {
-        if(!await _userRepository.IsUserExists(message.Chat.Id))
+        if (!await _userRepository.IsUserExists(message.Chat.Id))
         {
             return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
                 text: "Введите команду /start, чтобы начать настройку");
         }
-        
+
         var user = await _userRepository.GetAsync(message.Chat.Id);
 
-        if (user.ChatState.State == ChatSate.Configuration)
-        {
-            user.ApiKey = message.Text;
+        user.ApiKey = message.Text;
 
-            user.ChatState.State = ChatSate.Default;
-            
-            await _userRepository.Update(user);
-        }
+        user.ChatState.State = ChatSate.Default;
+
+        await _userRepository.Update(user);
+
         await bot.SendTextMessageAsync(chatId: message.Chat.Id,
             text: "API ключ успешно сохранен");
-        
+
         return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
             text: "Теперь вам будут проходить уведомления о продажах на WB");
     }
-    
+
     async Task<Message> Usage2(ITelegramBotClient bot, Message message)
     {
         const string usage = "Отправьте сгенерированный отчет (в формате zip) из личного кабинета WB, чтобы получить детализацию";
