@@ -48,9 +48,12 @@ public class SalesNotifyService : BackgroundService
                             text: sale.ToMessage(),
                             replyMarkup: new ReplyKeyboardRemove());
                     }
-                    
-                    user.LastUpdate = DateTimeOffset.UtcNow;
-                    await repository.Update(user);
+
+                    if (sales.Any())
+                    {
+                        user.LastUpdate = DateTimeOffset.UtcNow;
+                        await repository.Update(user);
+                    }
                 }
                 
             }

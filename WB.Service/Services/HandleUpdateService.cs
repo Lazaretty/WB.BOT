@@ -175,13 +175,13 @@ public class HandleUpdateService
             user.ChatState.State = ChatSate.Default;
 
             await _userRepository.Update(user);
+            
+            await bot.SendTextMessageAsync(chatId: message.Chat.Id,
+                text: "API ключ успешно сохранен");
         }
-
-        await bot.SendTextMessageAsync(chatId: message.Chat.Id,
-            text: "API ключ успешно сохранен");
-
+        
         return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
-            text: "Теперь вам будут проходить уведомления о продажах на WB");
+            text: "Этот бот присылает уведомления о продажах на WB. Для того чтобы изменить API ключ введите /start");
     }
 
     async Task<Message> Usage2(ITelegramBotClient bot, Message message)
