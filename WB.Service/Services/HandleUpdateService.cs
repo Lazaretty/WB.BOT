@@ -129,6 +129,12 @@ public class HandleUpdateService
 
     async Task<Message> Usage(ITelegramBotClient bot, Message message)
     {
+        if(!await _userRepository.IsUserExists(message.Chat.Id))
+        {
+            return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
+                text: "Введите команду /start, чтобы начать настройку");
+        }
+        
         var user = await _userRepository.GetAsync(message.Chat.Id);
 
         if (user.ChatState.State == ChatSate.Configuration)

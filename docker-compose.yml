@@ -3,7 +3,7 @@ version: "3.3"
 services:
   server:
     image: wb_bot:latest
-    container_name: wb.bot
+    container_name: wb_bot
     hostname: wb_server
     env_file:
       - .env
@@ -24,6 +24,7 @@ services:
         mode: host
   db:
     image: postgres:latest
+    container_name: wb_bot_db
     restart: unless-stopped
     environment:
       - POSTGRES_PASSWORD=postgres

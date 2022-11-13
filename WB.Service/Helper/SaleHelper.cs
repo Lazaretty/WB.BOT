@@ -6,7 +6,7 @@ public static class SaleHelper
 {
     public static string ToMessage(this Sale sale)
     {
-        return $"Продажа: " + Environment.NewLine + "Артикул : {sale.SupplierArticle}" + Environment.NewLine +
+        return $"Продажа: " + Environment.NewLine + $"Артикул : {sale.SupplierArticle}" + Environment.NewLine +
                $"Цена : {sale.TotalPrice}";
     }
 }
