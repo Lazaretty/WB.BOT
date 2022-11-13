@@ -145,6 +145,15 @@ public class HandleUpdateService
                 }
             });
         }
+        else
+        {
+            var user = await _userRepository.GetAsync(message.Chat.Id);
+            
+            user.ChatState.State = ChatSate.Configuration;
+            
+            await _userRepository.Update(user);
+        }
+
         return await bot.SendTextMessageAsync(chatId: message.Chat.Id,
             text: welcomeMessage);
     }
@@ -159,11 +168,14 @@ public class HandleUpdateService
 
         var user = await _userRepository.GetAsync(message.Chat.Id);
 
-        user.ApiKey = message.Text;
+        if (user.ChatState.State == ChatSate.Configuration)
+        {
+            user.ApiKey = message.Text;
 
-        user.ChatState.State = ChatSate.Default;
+            user.ChatState.State = ChatSate.Default;
 
-        await _userRepository.Update(user);
+            await _userRepository.Update(user);
+        }
 
         await bot.SendTextMessageAsync(chatId: message.Chat.Id,
             text: "API ключ успешно сохранен");
