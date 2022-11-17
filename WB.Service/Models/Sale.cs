@@ -10,4 +10,10 @@ public class Sale
     public int DiscountPercent { get; set; }
     public int NmId { get; set; }
     public string SaleID { get; set; }
+    public string Brand { get; set; }
+    public double ForPay { get; set; }
+    
+    public string WarehouseName { get; set; }
+    public string OblastOkrugName { get; set; }
+    public string RegionName { get; set; }
 }
