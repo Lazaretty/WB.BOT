@@ -18,7 +18,6 @@ public class WBAdapter
     {
         lastUpdate = lastUpdate.AddHours(3);
         var response = await _httpClient.GetAsync($"api/v1/supplier/sales?key={apiToken}&datefrom={lastUpdate.Year}-{lastUpdate.Month}-{lastUpdate.Day}T{lastUpdate.Hour}:{lastUpdate.Minute}:{lastUpdate.Second}Z&flag=0");
-        response.EnsureSuccessStatusCode();
         
         if (!response.IsSuccessStatusCode)
         {

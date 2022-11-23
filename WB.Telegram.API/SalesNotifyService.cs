@@ -121,7 +121,7 @@ public class SalesNotifyService : BackgroundService
                                : height;
                        }
 
-                       var border = 15;
+                       var border = 10;
                        
                        height += border * 2;
                        width += border * 4;
