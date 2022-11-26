@@ -52,6 +52,11 @@ public class SalesNotifyService : BackgroundService
                 {
                     var sales = await wbAdapter.GetSales(user.ApiKey, user.LastUpdate.Value);
 
+                    if (sales == null || !sales.Any())
+                    {
+                       continue;
+                    }
+
                     if (count == 50)
                     {
                         await Task.WhenAll(notifyTasks);
