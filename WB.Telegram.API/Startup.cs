@@ -5,6 +5,7 @@ using Telegram.Bot;
 using Telegram.Bot.Examples.WebHook.Services;
 using WB.DAL;
 using WB.Service.Models;
+using WB.Service.Services;
 
 namespace WB.Telegram.API
 {
@@ -23,7 +24,7 @@ namespace WB.Telegram.API
             var botConfig = Configuration.GetSection("BotConfiguration").Get<TelegramConfiguration>();
 
             services.AddScoped<HandleUpdateService>();
-            
+            services.AddScoped<WBAdapter>();
             //services.AddHostedService<ConfigureWebhook>();
             services.AddHostedService<PoolingService>();
             
