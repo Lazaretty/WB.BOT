@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using WB.Service.Models;
 
@@ -11,9 +12,12 @@ public class WBAdapter
     private readonly List<string> _proxies;
 
     private static readonly Dictionary<string, DateTime> _usedProxies = new();
+    
+    private readonly ILogger<WBAdapter> _logger;
 
-    public WBAdapter()
+    public WBAdapter(ILogger<WBAdapter> logger)
     {
+        _logger = logger;
         _httpClient = new HttpClient();
         
         _httpClient.BaseAddress = new Uri(@"https://suppliers-stats.wildberries.ru/");
@@ -95,7 +99,7 @@ public class WBAdapter
         }
         catch (Exception ex)
         {
-            Console.WriteLine("ex");
+            _logger.LogError(ex, "Error while getting updates from WB");
             return await Task.FromException<string>(ex);
         }
     }
