@@ -48,7 +48,7 @@ public class SalesNotifyService : BackgroundService
 
                 var count = 0;
                 
-                foreach (var user in users)
+                foreach (var user in users.Where(x => !string.IsNullOrEmpty(x.ApiKey)))
                 {
                     var sales = await wbAdapter.GetSales(user.ApiKey, user.LastUpdate.Value);
 
