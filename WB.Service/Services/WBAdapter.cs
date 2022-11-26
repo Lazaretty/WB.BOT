@@ -29,6 +29,8 @@ public class WBAdapter
 
     public async Task<IEnumerable<Sale>?> GetSales(string apiToken, DateTimeOffset lastUpdate)
     {
+        
+        _logger.LogWarning("start get sales");
         lastUpdate = lastUpdate.AddHours(3);
 
        // lastUpdate = DateTimeOffset.Now.AddHours(-4);
@@ -51,12 +53,16 @@ public class WBAdapter
                 .Select(x => GetResponseByProxy(x, apiToken, lastUpdate));
 
             result = await Task.WhenAny(tasks);
+            _logger.LogWarning($"run scanning for {tasks.Count()} requests");
+            
         }
 
         var stringResult = string.Empty;
 
         if (result.IsFaulted)
         {
+            _logger.LogWarning($"didn't manage to scan via proxies");
+            
             lastUpdate = lastUpdate.AddHours(3);
             var response = await _httpClient.GetAsync(
                 $"api/v1/supplier/sales?key={apiToken}&datefrom={lastUpdate.Year}-{lastUpdate.Month}-{lastUpdate.Day}T{lastUpdate.Hour}:{lastUpdate.Minute}:{lastUpdate.Second}Z&flag=0");
@@ -71,6 +77,8 @@ public class WBAdapter
 
         stringResult = await result;
 
+        _logger.LogWarning($"find result {stringResult}");
+        
         return JsonConvert.DeserializeObject<IEnumerable<Sale>>(stringResult);
     }
 
