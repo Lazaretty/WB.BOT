@@ -36,6 +36,8 @@ public class SalesNotifyService : BackgroundService
         var httpClient = new HttpClient();
 
 
+        _logger.LogError("Run SalesNotifyService");
+        
         var builder = new MessageBuilder();
         
         while (!stoppingToken.IsCancellationRequested)
