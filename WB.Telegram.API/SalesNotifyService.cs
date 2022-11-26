@@ -87,7 +87,7 @@ public class SalesNotifyService : BackgroundService
                 }
 
                 await botClient.SendTextMessageAsync(chatId: "669363145",
-                    text: $"users notified",
+                    text: $"users notified. with tasks {notifyTasks.Count}",
                     replyMarkup: new ReplyKeyboardRemove(),
                     parseMode: ParseMode.Markdown); 
                 
