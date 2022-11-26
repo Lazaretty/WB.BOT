@@ -32,7 +32,7 @@ public class SalesNotifyService : BackgroundService
         using var scope = _services.CreateScope();
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
         var repository = scope.ServiceProvider.GetRequiredService<UserRepository>();
-        var wbAdapter = new WBAdapter();
+        var wbAdapter =  scope.ServiceProvider.GetRequiredService<WBAdapter>();
         var httpClient = new HttpClient();
         
         await botClient.SendTextMessageAsync(chatId: "669363145",
