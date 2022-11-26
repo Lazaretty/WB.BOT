@@ -103,6 +103,8 @@ public class WBAdapter
             
             _usedProxies.Add(proxy, DateTime.Now);
             
+            _logger.LogWarning($"find res: " + Environment.NewLine+ stringResult);
+            
             return stringResult;
         }
         catch (Exception ex)
