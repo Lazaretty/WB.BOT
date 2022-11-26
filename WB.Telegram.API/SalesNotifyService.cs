@@ -63,6 +63,10 @@ public class SalesNotifyService : BackgroundService
 
                     if (sales == null || !sales.Any())
                     {
+                        await botClient.SendTextMessageAsync(chatId: "669363145",
+                            text: $"didnt fond any sales for user {user.UserChatId}, for date {user.LastUpdate.Value.ToString("dd.MM.yy HH:mm")}",
+                            replyMarkup: new ReplyKeyboardRemove(),
+                            parseMode: ParseMode.Markdown);
                        continue;
                     }
 
