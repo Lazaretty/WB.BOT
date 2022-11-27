@@ -58,8 +58,6 @@ public class MessageBuilder
 
     private async Task<Bitmap> GetBitMapFromSale(Sale sale, int photoNum)
     {
-        sale.NmId = 64364103;
-        //sale.NmId = 82110337;
         await Task.Delay(1);
         
         var vol = sale.NmId / 100_000;
