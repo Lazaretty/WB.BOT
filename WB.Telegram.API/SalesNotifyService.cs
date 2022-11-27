@@ -29,16 +29,17 @@ public class SalesNotifyService : BackgroundService
     {
         await Task.Delay(5_000);
         
-        using var scope = _services.CreateScope();
-        var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
-        var repository = scope.ServiceProvider.GetRequiredService<UserRepository>();
-        var wbAdapter =  scope.ServiceProvider.GetRequiredService<WBAdapter>();
-        var builder = new MessageBuilder();
         
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
+                using var scope = _services.CreateScope();
+                var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
+                var repository = scope.ServiceProvider.GetRequiredService<UserRepository>();
+                var wbAdapter =  scope.ServiceProvider.GetRequiredService<WBAdapter>();
+                var builder = new MessageBuilder();
+                
                 await wbAdapter.Init();
                 
                 var users = await repository.GetAllActiveAsync();
@@ -49,10 +50,13 @@ public class SalesNotifyService : BackgroundService
                 
                 foreach (var user in users.Where(x => !string.IsNullOrEmpty(x.ApiKey)))
                 {
+                    _logger.LogInformation($"Handle updates for {user.UserChatId} last update {user.LastUpdate.Value.ToString("dd.MM.yy HH:mm")}");
+                    
                     var sales = await wbAdapter.GetSales(user.ApiKey, user.LastUpdate.Value);
 
                     if (sales == null || !sales.Any())
                     {
+                        _logger.LogInformation($"No sales found for {user.UserChatId}");
                         continue;
                     }
 
@@ -80,6 +84,8 @@ public class SalesNotifyService : BackgroundService
 
     private async Task Notify(User user ,IEnumerable<Sale> sales, UserRepository repository, MessageBuilder builder, ITelegramBotClient botClient)
     {
+        _logger.LogInformation($"Send message for {user.UserChatId} about {sales.Count()} sales");
+        
         foreach (var sale in sales)
         {
             var content = new MemoryStream();
