@@ -9,7 +9,7 @@ public class WBAdapter
 {
     private readonly HttpClient _httpClient;
 
-    private readonly List<string> _proxies;
+    private List<string> _proxies;
 
     private static readonly Dictionary<string, DateTime> _usedProxies = new();
     
@@ -21,19 +21,19 @@ public class WBAdapter
         _httpClient = new HttpClient();
         
         _httpClient.BaseAddress = new Uri(@"https://suppliers-stats.wildberries.ru/");
-       
-        var proxyService = new ProxyParser();
+    }
 
-        _proxies = proxyService.GetProxyList().GetAwaiter().GetResult();
+    public async Task Init()
+    {
+        var proxyService = new ProxyParser();
+        _proxies = await proxyService.GetProxyList();
     }
 
     public async Task<IEnumerable<Sale>?> GetSales(string apiToken, DateTimeOffset lastUpdate)
     {
-        
-        _logger.LogWarning("start get sales");
         lastUpdate = lastUpdate.AddHours(3);
 
-       // lastUpdate = DateTimeOffset.Now.AddHours(-4);
+        //lastUpdate = DateTimeOffset.Now.AddHours(-4);
        
         Task<string> result = Task.FromResult(string.Empty);
 
@@ -53,16 +53,12 @@ public class WBAdapter
                 .Select(x => GetResponseByProxy(x, apiToken, lastUpdate));
 
             result = await Task.WhenAny(tasks);
-            _logger.LogWarning($"run scanning for {tasks.Count()} requests");
-            
         }
 
-        var stringResult = string.Empty;
-
-        if (result.IsFaulted)
+        string stringResult;
+        
+        if (result.IsFaulted || _proxies.Count == 0)
         {
-            _logger.LogWarning($"didn't manage to scan via proxies");
-            
             lastUpdate = lastUpdate.AddHours(3);
             var response = await _httpClient.GetAsync(
                 $"api/v1/supplier/sales?key={apiToken}&datefrom={lastUpdate.Year}-{lastUpdate.Month}-{lastUpdate.Day}T{lastUpdate.Hour}:{lastUpdate.Minute}:{lastUpdate.Second}Z&flag=0");
@@ -74,11 +70,11 @@ public class WBAdapter
                 return ArraySegment<Sale>.Empty;
             }
         }
+        else
+        {
+            stringResult = await result;
+        }
 
-        stringResult = await result;
-
-        _logger.LogWarning($"find result {stringResult}");
-        
         return JsonConvert.DeserializeObject<IEnumerable<Sale>>(stringResult);
     }
 
@@ -102,8 +98,6 @@ public class WBAdapter
             var stringResult = await new StreamReader(myResp.GetResponseStream()).ReadToEndAsync();
             
             _usedProxies.Add(proxy, DateTime.Now);
-            
-            _logger.LogWarning($"find res: " + Environment.NewLine+ stringResult);
             
             return stringResult;
         }

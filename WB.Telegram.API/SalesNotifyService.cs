@@ -33,19 +33,14 @@ public class SalesNotifyService : BackgroundService
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
         var repository = scope.ServiceProvider.GetRequiredService<UserRepository>();
         var wbAdapter =  scope.ServiceProvider.GetRequiredService<WBAdapter>();
-        var httpClient = new HttpClient();
-        
-        await botClient.SendTextMessageAsync(chatId: "669363145",
-            text: "Run SalesNotifyService",
-            replyMarkup: new ReplyKeyboardRemove(),
-            parseMode: ParseMode.Markdown);
-        
         var builder = new MessageBuilder();
         
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
+                await wbAdapter.Init();
+                
                 var users = await repository.GetAllActiveAsync();
 
                 var notifyTasks = new List<Task>();
@@ -54,47 +49,23 @@ public class SalesNotifyService : BackgroundService
                 
                 foreach (var user in users.Where(x => !string.IsNullOrEmpty(x.ApiKey)))
                 {
-                    await botClient.SendTextMessageAsync(chatId: "669363145",
-                        text: $"Run user {user.UserChatId}",
-                        replyMarkup: new ReplyKeyboardRemove(),
-                        parseMode: ParseMode.Markdown);
-                    
                     var sales = await wbAdapter.GetSales(user.ApiKey, user.LastUpdate.Value);
 
                     if (sales == null || !sales.Any())
                     {
-                        await botClient.SendTextMessageAsync(chatId: "669363145",
-                            text: $"didnt fond any sales for user {user.UserChatId}, for date {user.LastUpdate.Value.ToString("dd.MM.yy HH:mm")}",
-                            replyMarkup: new ReplyKeyboardRemove(),
-                            parseMode: ParseMode.Markdown);
-                       continue;
+                        continue;
                     }
 
-                    await botClient.SendTextMessageAsync(chatId: "669363145",
-                        text: $"Get sale {sales.Count()} for user {user.UserChatId}",
-                        replyMarkup: new ReplyKeyboardRemove(),
-                        parseMode: ParseMode.Markdown);
-                    
                     if (count == 50)
                     {
                         await Task.WhenAll(notifyTasks);
                         notifyTasks.Clear();
-                        
-                        await botClient.SendTextMessageAsync(chatId: "669363145",
-                            text: $"users notified",
-                            replyMarkup: new ReplyKeyboardRemove(),
-                            parseMode: ParseMode.Markdown);
                     }
 
                     notifyTasks.Add(Notify(user, sales, repository, builder, botClient));
                     count++;
                 }
 
-                await botClient.SendTextMessageAsync(chatId: "669363145",
-                    text: $"users notified. with tasks {notifyTasks.Count}",
-                    replyMarkup: new ReplyKeyboardRemove(),
-                    parseMode: ParseMode.Markdown); 
-                
                 await Task.WhenAll(notifyTasks);
 
             }
