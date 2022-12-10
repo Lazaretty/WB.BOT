@@ -38,6 +38,8 @@ public class SalesNotifyService : BackgroundService
                 var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
                 var repository = scope.ServiceProvider.GetRequiredService<UserRepository>();
                 var wbAdapter =  scope.ServiceProvider.GetRequiredService<WBAdapter>();
+                var saleInfoRepository = scope.ServiceProvider.GetRequiredService<SaleInfoRepository>();
+                var saleHelper = scope.ServiceProvider.GetRequiredService<SaleHelper>();
                 var builder = new MessageBuilder();
                 
                 await wbAdapter.Init();
@@ -66,7 +68,7 @@ public class SalesNotifyService : BackgroundService
                         notifyTasks.Clear();
                     }
 
-                    notifyTasks.Add(Notify(user, sales, repository, builder, botClient));
+                    notifyTasks.Add(Notify(user, sales, repository, saleInfoRepository, saleHelper, builder, botClient));
                     count++;
                 }
 
@@ -82,7 +84,7 @@ public class SalesNotifyService : BackgroundService
         }
     }
 
-    private async Task Notify(User user ,IEnumerable<Sale> sales, UserRepository repository, MessageBuilder builder, ITelegramBotClient botClient)
+    private async Task Notify(User user ,IEnumerable<Sale> sales, UserRepository repository, SaleInfoRepository saleInfoRepository , SaleHelper saleHelper  ,MessageBuilder builder, ITelegramBotClient botClient)
     {
         _logger.LogInformation($"Send message for {user.UserChatId} about {sales.Count()} sales");
         
@@ -101,18 +103,26 @@ public class SalesNotifyService : BackgroundService
 
             content.Position = 0;
 
+            await saleInfoRepository.InsertAsync(new SalesInfo()
+            {
+                UserChatId = user.UserChatId,
+                Articul = sale.NmId.ToString(),
+                Income = sale.ForPay,
+                SaleDate = sale.Date
+            });
+            
             if (content.Length > 0)
             {
                 await botClient.SendPhotoAsync(
                     chatId: user.UserChatId,
                     new InputOnlineFile(content),
-                    caption: sale.ToMessage(),
+                    caption: await saleHelper.ToMessage(user.UserChatId, sale),
                     parseMode: ParseMode.Markdown);
             }
             else
             {
                 await botClient.SendTextMessageAsync(chatId: user.UserChatId,
-                    text: sale.ToMessage(),
+                    text: await saleHelper.ToMessage(user.UserChatId, sale),
                     replyMarkup: new ReplyKeyboardRemove(),
                     parseMode: ParseMode.Markdown);
             }

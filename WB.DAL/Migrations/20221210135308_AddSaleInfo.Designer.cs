@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WB.DAL;
@@ -11,9 +12,10 @@ using WB.DAL;
 namespace WB.DAL.Migrations
 {
     [DbContext(typeof(WbContext))]
-    partial class WbContextModelSnapshot : ModelSnapshot
+    [Migration("20221210135308_AddSaleInfo")]
+    partial class AddSaleInfo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

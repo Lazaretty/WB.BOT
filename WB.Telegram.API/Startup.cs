@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Examples.WebHook.Services;
 using WB.DAL;
+using WB.Service.Helper;
 using WB.Service.Models;
 using WB.Service.Services;
 
@@ -25,6 +26,7 @@ namespace WB.Telegram.API
 
             services.AddScoped<HandleUpdateService>();
             services.AddScoped<WBAdapter>();
+            services.AddScoped<SaleHelper>();
             //services.AddHostedService<ConfigureWebhook>();
             services.AddHostedService<PoolingService>();
             

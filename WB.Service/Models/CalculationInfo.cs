@@ -5,6 +5,8 @@ public class CalculationInfo
     public string Articul { get; set; }
 
     public decimal Income { get; set; }
+    
+    public decimal WbIncome { get; set; }
 
     public decimal Taxes => Income * TaxRate / 100;
 
