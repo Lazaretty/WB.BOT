@@ -27,10 +27,12 @@ namespace WB.Telegram.API
             services.AddScoped<HandleUpdateService>();
             services.AddScoped<WBAdapter>();
             services.AddScoped<SaleHelper>();
+            services.AddScoped<ProxyParser>();
             //services.AddHostedService<ConfigureWebhook>();
             services.AddHostedService<PoolingService>();
             
             services.AddHostedService<SalesNotifyService>();
+            services.AddHostedService<ProxyWatchDogService>();
 
             /*
             services.AddHttpClient("tgwebhook")

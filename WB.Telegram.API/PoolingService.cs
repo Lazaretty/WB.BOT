@@ -23,14 +23,9 @@ public class PoolingService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var scope = _services.CreateScope();
-        var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
-        var userRepository = scope.ServiceProvider.GetRequiredService<UserRepository>();
-        var chatStateRepository = scope.ServiceProvider.GetRequiredService<ChatStateRepository>();
-
-
-        var handleService = new HandleUpdateService(botClient,userRepository,chatStateRepository);
         
+        var botClient = _services.GetRequiredService<ITelegramBotClient>();
+
         await botClient.DeleteWebhookAsync(cancellationToken: stoppingToken);
         
         var offset = -1;
@@ -52,6 +47,13 @@ public class PoolingService : BackgroundService
                 
                 foreach (var update in updates)
                 {
+                    using var scope = _services.CreateScope();
+                    var userRepository = scope.ServiceProvider.GetRequiredService<UserRepository>();
+                    var chatStateRepository = scope.ServiceProvider.GetRequiredService<ChatStateRepository>();
+                    var proxyRepository = scope.ServiceProvider.GetRequiredService<ProxyRepository>();
+                    
+                    var handleService = new HandleUpdateService(botClient,userRepository,chatStateRepository,proxyRepository);
+                    
                     await handleService.EchoAsync(update);
                     offset = update.Id;
                 }

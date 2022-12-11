@@ -19,6 +19,7 @@ public static class WBDALExtensions
         services.AddScoped<UserRepository>();
         services.AddScoped<ChatStateRepository>();
         services.AddScoped<SaleInfoRepository>();
+        services.AddScoped<ProxyRepository>();
         
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         

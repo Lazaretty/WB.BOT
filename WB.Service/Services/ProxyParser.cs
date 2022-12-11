@@ -2,6 +2,8 @@
 using HtmlAgilityPack;
 using Serilog;
 using Serilog.Core;
+using WB.DAL.Models;
+using WB.DAL.Repositories;
 
 namespace WB.Service.Services;
 
@@ -11,8 +13,11 @@ public class ProxyParser
 
     private List<int> _ports;
 
-    public ProxyParser()
+    private readonly ProxyRepository _proxyRepository;
+
+    public ProxyParser(ProxyRepository proxyRepository)
     {
+        _proxyRepository = proxyRepository;
         _ports = new List<int>()
         {
             8080
@@ -37,5 +42,27 @@ public class ProxyParser
         }
 
         return result;
+    }
+
+    public async Task<int> ReadAndSaveProxiesFromFile(Stream content)
+    {
+        var reader = new StreamReader(content);
+        var text = await reader.ReadToEndAsync();
+        
+        var pattern = new Regex(@"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?):\d{1,5}\b");    
+        var matches = pattern.Matches(text);
+
+        foreach (var match in matches.Select(x => x.ToString()))
+        {
+            await _proxyRepository.InsertAsync(new Proxy()
+            {
+                Host = match.Split(':')[0],
+                Port = Int32.Parse(match.Split(':')[1]),
+                Active = true,
+                LastUsed = DateTime.Now
+            });
+        }
+
+        return matches.Count;
     }
 }

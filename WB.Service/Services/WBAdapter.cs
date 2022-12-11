@@ -25,13 +25,11 @@ public class WBAdapter
 
     public async Task Init()
     {
-        var proxyService = new ProxyParser();
-        _proxies = await proxyService.GetProxyList();
     }
 
     public async Task<IEnumerable<Sale>?> GetSales(string apiToken, DateTimeOffset lastUpdate)
     {
-        lastUpdate = lastUpdate.AddHours(3);
+       // lastUpdate = lastUpdate.AddHours(3);
 
         //lastUpdate = DateTimeOffset.Now.AddHours(-4);
        
@@ -103,7 +101,7 @@ public class WBAdapter
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error while getting updates from WB");
+            //_logger.LogError(ex, "Error while getting updates from WB");
             return await Task.FromException<string>(ex);
         }
     }

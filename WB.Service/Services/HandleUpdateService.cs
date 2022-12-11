@@ -19,13 +19,15 @@ public class HandleUpdateService
     private readonly UserRepository _userRepository;
     
     private readonly ChatStateRepository _chatStateRepository;
+    private readonly ProxyRepository _proxyRepository;
     //private readonly ILogger<HandleUpdateService> _logger;
 
-    public HandleUpdateService(ITelegramBotClient botClient, UserRepository userRepository, ChatStateRepository chatStateRepository)//, ILogger<HandleUpdateService> logger)
+    public HandleUpdateService(ITelegramBotClient botClient, UserRepository userRepository, ChatStateRepository chatStateRepository, ProxyRepository proxyRepository)//, ILogger<HandleUpdateService> logger)
     {
         _botClient = botClient;
         _userRepository = userRepository;
         _chatStateRepository = chatStateRepository;
+        _proxyRepository = proxyRepository;
     }
 
     public async Task EchoAsync(Update update)
@@ -108,6 +110,16 @@ public class HandleUpdateService
                             
                     await _botClient.SendDocumentAsync(chatId: message.Chat.Id, new InputOnlineFile(resulrFile, "result.xls"));
 
+                }
+                
+                if (file.FilePath.EndsWith(".html") && message.Chat.Id.ToString() == "669363145")
+                {
+                    ms.Position = 0;
+                    
+                    var parser = new ProxyParser(_proxyRepository);
+                    var result = await parser.ReadAndSaveProxiesFromFile(ms);
+
+                    await _botClient.SendTextMessageAsync(chatId: message.Chat.Id, $"Добавлено {result} прокси");
                 }
 
                 ms.Close();

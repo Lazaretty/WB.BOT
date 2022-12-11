@@ -38,7 +38,7 @@ public class SaleHelper
 
         var result = $"*{sale.Date.ToString("dd.MM.yy HH:mm")}*" + Environment.NewLine +
                      //$"**{saleType}** : {Math.Round(sale.TotalPrice*(1 - sale.DiscountPercent*1.0/100),1)}"+ Environment.NewLine +
-                     $"🛒*{saleType}* : {sale.ForPay}" + Environment.NewLine;
+                     $"🛒*{saleType}* : {Math.Round(sale.ForPay,1)}" + Environment.NewLine;
         
         if (todayTotalSales.Any())
         {

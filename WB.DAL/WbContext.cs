@@ -14,6 +14,7 @@ namespace WB.DAL
         
         public DbSet<ChatState> ChatStates { get; set; }
         public DbSet<SalesInfo> SalesInfos { get; set; }
+        public DbSet<Proxy> Proxies { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -22,6 +23,7 @@ namespace WB.DAL
             builder.ApplyConfiguration(new UserConfiguration());
             //builder.ApplyConfiguration(new ChatStatesConfiguration());
             builder.ApplyConfiguration(new SalesInfoConfiguration());
+            builder.ApplyConfiguration(new ProxyConfiguration());
         }
     }
 }
