@@ -145,7 +145,7 @@ public class SalesNotifyService : BackgroundService
         
         if (sales.Any())
         {
-            //user.LastUpdate = DateTimeOffset.UtcNow;
+            user.LastUpdate = DateTimeOffset.UtcNow;
             await repository.Update(user);
         }
     }
