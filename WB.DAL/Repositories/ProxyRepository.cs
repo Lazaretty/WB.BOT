@@ -30,14 +30,21 @@ public class ProxyRepository
 
     public async Task<List<Proxy>> GetFreshestProxies(int limit = 50)
     {
-        var proxies = await Context.Proxies.Where(x => x.Active).OrderByDescending(x => x.LastUsed).Take(limit).ToListAsync();
+        var dtn = DateTime.Now;
+        
+        var proxies = await Context.Proxies
+            .Where(x => x.Active && x.LastUsed - DateTime.Now > TimeSpan.FromMinutes(3))
+            .OrderByDescending(x => x.SuccessfulUses)
+            .ThenBy(x => x.LastUsed)
+            .Take(limit)
+            .ToListAsync();
 
         return proxies;
     }
     
-    public async Task<List<Proxy>> GetAllAsync(bool active = true)
+    public async Task<List<Proxy>> GetAllAsync()
     {
-        var proxies = await Context.Proxies.Where(x => x.Active == active).ToListAsync();
+        var proxies = await Context.Proxies.ToListAsync();
 
         return proxies;
     }

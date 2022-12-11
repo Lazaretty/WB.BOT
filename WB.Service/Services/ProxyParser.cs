@@ -59,7 +59,8 @@ public class ProxyParser
                 Host = match.Split(':')[0],
                 Port = Int32.Parse(match.Split(':')[1]),
                 Active = true,
-                LastUsed = DateTime.Now
+                LastUsed = DateTime.Now,
+                SuccessfulUses = 0
             });
         }
 

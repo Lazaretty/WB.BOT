@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Diagnostics;
+using System.Drawing;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InputFiles;
@@ -34,6 +35,9 @@ public class SalesNotifyService : BackgroundService
         {
             try
             {
+                var sw = new Stopwatch();
+                sw.Start();
+                
                 using var scope = _services.CreateScope();
                 var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
                 var repository = scope.ServiceProvider.GetRequiredService<UserRepository>();
@@ -52,17 +56,25 @@ public class SalesNotifyService : BackgroundService
                 
                 foreach (var user in users.Where(x => !string.IsNullOrEmpty(x.ApiKey)))
                 {
+                    await wbAdapter.Init();
+                    
                     _logger.LogInformation($"Handle updates for {user.UserChatId} last update {user.LastUpdate.Value.ToString("dd.MM.yy HH:mm")}");
                     
                     var sales = await wbAdapter.GetSales(user.ApiKey, user.LastUpdate.Value);
 
+                    sw.Stop();
+                
+                    await botClient.SendTextMessageAsync(chatId: 669363145,
+                        text: $"{TimeSpan.FromMilliseconds(sw.ElapsedMilliseconds).ToString()} - {sales.Count()}",
+                        replyMarkup: new ReplyKeyboardRemove(),
+                        parseMode: ParseMode.Markdown);
+                    
                     if (sales == null || !sales.Any())
                     {
-                        _logger.LogInformation($"No sales found for {user.UserChatId}");
                         continue;
                     }
 
-                    if (count == 50)
+                    if (count == 5)
                     {
                         await Task.WhenAll(notifyTasks);
                         notifyTasks.Clear();
@@ -72,7 +84,10 @@ public class SalesNotifyService : BackgroundService
                     count++;
                 }
 
-                await Task.WhenAll(notifyTasks);
+                if (notifyTasks.Any())
+                {
+                    await Task.WhenAll(notifyTasks);
+                }
 
             }
             catch (Exception e)
@@ -130,7 +145,7 @@ public class SalesNotifyService : BackgroundService
         
         if (sales.Any())
         {
-            user.LastUpdate = DateTimeOffset.UtcNow;
+            //user.LastUpdate = DateTimeOffset.UtcNow;
             await repository.Update(user);
         }
     }
