@@ -65,7 +65,7 @@ public class SalesNotifyService : BackgroundService
                     sw.Stop();
                 
                     await botClient.SendTextMessageAsync(chatId: 669363145,
-                        text: $"{TimeSpan.FromMilliseconds(sw.ElapsedMilliseconds).ToString()} - {sales.Count()}",
+                        text: $"{TimeSpan.FromMilliseconds(sw.ElapsedMilliseconds).ToString()} - {sales.Count()} - {user.UserChatId} - {user.LastUpdate}",
                         replyMarkup: new ReplyKeyboardRemove(),
                         parseMode: ParseMode.Markdown);
                     
