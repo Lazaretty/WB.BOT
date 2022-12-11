@@ -47,7 +47,7 @@ public class WBAdapter
 
     public async Task<IEnumerable<Sale>?> GetSales(string apiToken, DateTimeOffset lastUpdate)
     {
-       // lastUpdate = lastUpdate.AddHours(3);
+        lastUpdate = lastUpdate.AddHours(3);
 
         //lastUpdate = DateTimeOffset.Now.AddHours(-4);
 
