@@ -46,8 +46,6 @@ public class SalesNotifyService : BackgroundService
                 var saleHelper = scope.ServiceProvider.GetRequiredService<SaleHelper>();
                 var builder = new MessageBuilder();
                 
-                await wbAdapter.Init();
-                
                 var users = await repository.GetAllActiveAsync();
 
                 var notifyTasks = new List<Task>();

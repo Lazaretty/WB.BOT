@@ -12,7 +12,7 @@ public class ProxyWatchDogService: BackgroundService
     private readonly ILogger<SalesNotifyService> _logger;
     private readonly IServiceProvider _services;
     private readonly TelegramConfiguration _botConfig;
-    private readonly ConcurrentBag<Proxy> _proxyToChange = new();
+    private readonly ConcurrentBag<long> _proxyToChange = new();
 
     public ProxyWatchDogService(
         ILogger<SalesNotifyService> logger,
@@ -66,10 +66,12 @@ public class ProxyWatchDogService: BackgroundService
                     await Task.WhenAll(tasks);
                 }
 
-                foreach (var proxy in _proxyToChange)
+                foreach (var proxyId in _proxyToChange)
                 {
-                    await proxyRepository.Update(proxy);
+                    var proxy = proxies.FirstOrDefault(x => x.ProxyId == proxyId);
+                    if (proxy != null) await proxyRepository.Update(proxy);
                 }
+
                 _proxyToChange.Clear();
                 _logger.LogInformation($"{_proxyToChange} проксей поменяли статус");
                 _logger.LogInformation($"{proxies.Count(x => x.Active)} активных");
@@ -104,7 +106,7 @@ public class ProxyWatchDogService: BackgroundService
             if (proxy.Active != result)
             {
                 proxy.Active = result; 
-                _proxyToChange.Add(proxy);
+                _proxyToChange.Add(proxy.ProxyId);
             }
         }
     }

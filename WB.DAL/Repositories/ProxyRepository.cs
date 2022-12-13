@@ -33,19 +33,19 @@ public class ProxyRepository
         var dtn = DateTime.Now;
         
         var proxies = await Context.Proxies
-            .Where(x => x.Active && x.LastUsed - DateTime.Now > TimeSpan.FromMinutes(3))
+            .Where(x => x.Active && DateTime.Now - x.LastUsed > TimeSpan.FromMinutes(3))
             .OrderByDescending(x => x.SuccessfulUses)
             .ThenBy(x => x.LastUsed)
             .Take(limit)
             .ToListAsync();
-
+        
         return proxies;
     }
     
     public async Task<List<Proxy>> GetAllAsync()
     {
         var proxies = await Context.Proxies.ToListAsync();
-
+        
         return proxies;
     }
 }
