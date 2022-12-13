@@ -37,40 +37,43 @@ public class SalesNotifyService : BackgroundService
             {
                 var sw = new Stopwatch();
                 sw.Start();
-                
+
                 using var scope = _services.CreateScope();
                 var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
                 var repository = scope.ServiceProvider.GetRequiredService<UserRepository>();
-                var wbAdapter =  scope.ServiceProvider.GetRequiredService<WBAdapter>();
+                var wbAdapter = scope.ServiceProvider.GetRequiredService<WBAdapter>();
                 var saleInfoRepository = scope.ServiceProvider.GetRequiredService<SaleInfoRepository>();
                 var saleHelper = scope.ServiceProvider.GetRequiredService<SaleHelper>();
                 var builder = new MessageBuilder();
-                
+
                 var users = await repository.GetAllActiveAsync();
 
                 var notifyTasks = new List<Task>();
 
                 var count = 0;
-                
+
                 foreach (var user in users.Where(x => !string.IsNullOrEmpty(x.ApiKey)))
                 {
                     await wbAdapter.Init();
-                    
-                    _logger.LogInformation($"Handle updates for {user.UserChatId} last update {user.LastUpdate.Value.ToString("dd.MM.yy HH:mm")}");
-                    
+
+                    _logger.LogInformation(
+                        $"Handle updates for {user.UserChatId} last update {user.LastUpdate.Value.ToString("dd.MM.yy HH:mm")}");
+
                     var sales = await wbAdapter.GetSales(user.ApiKey, user.LastUpdate.Value);
 
                     sw.Stop();
-                
-                    await botClient.SendTextMessageAsync(chatId: 669363145,
-                        text: $"{TimeSpan.FromMilliseconds(sw.ElapsedMilliseconds).ToString()} - {sales.Count()} - {user.UserChatId} - {user.LastUpdate}",
-                        replyMarkup: new ReplyKeyboardRemove(),
-                        parseMode: ParseMode.Markdown);
-                    
+
                     if (sales == null || !sales.Any())
                     {
                         continue;
                     }
+
+                    await botClient.SendTextMessageAsync(chatId: 669363145,
+                        text:
+                        $"{TimeSpan.FromMilliseconds(sw.ElapsedMilliseconds).ToString()} - {sales.Count()} - {user.UserChatId} - {user.LastUpdate}",
+                        replyMarkup: new ReplyKeyboardRemove(),
+                        parseMode: ParseMode.Markdown);
+
 
                     if (count == 5)
                     {
@@ -78,7 +81,8 @@ public class SalesNotifyService : BackgroundService
                         notifyTasks.Clear();
                     }
 
-                    notifyTasks.Add(Notify(user, sales, repository, saleInfoRepository, saleHelper, builder, botClient));
+                    notifyTasks.Add(Notify(user, sales, repository, saleInfoRepository, saleHelper, builder,
+                        botClient));
                     count++;
                 }
 
