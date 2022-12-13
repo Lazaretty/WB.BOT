@@ -129,7 +129,7 @@ public class WBAdapter
         {
             HttpWebRequest myReq = (HttpWebRequest)WebRequest
                 .Create(
-                    $"https://suppliers-stats.wildberries.ru/api/v1/supplier/sales?key={apiToken}&datefrom={lastUpdate.Year}-{lastUpdate.Month}-{lastUpdate.Day - 1}T{lastUpdate.Hour}:{lastUpdate.Minute}:{lastUpdate.Second}Z&flag=0");
+                    $"https://suppliers-stats.wildberries.ru/api/v1/supplier/sales?key={apiToken}&datefrom={lastUpdate.Year}-{lastUpdate.Month}-{lastUpdate.Day}T{lastUpdate.Hour}:{lastUpdate.Minute}:{lastUpdate.Second}Z&flag=0");
 
             proxy.LastUsed = DateTime.Now;
             _usedProxies.Add(proxy);
