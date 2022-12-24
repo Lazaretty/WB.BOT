@@ -127,6 +127,8 @@ public class WBAdapter
 
         try
         {
+            lastUpdate = lastUpdate.AddHours(3);
+            
             HttpWebRequest myReq = (HttpWebRequest)WebRequest
                 .Create(
                     $"https://suppliers-stats.wildberries.ru/api/v1/supplier/sales?key={apiToken}&datefrom={lastUpdate.Year}-{lastUpdate.Month}-{lastUpdate.Day}T{lastUpdate.Hour}:{lastUpdate.Minute}:{lastUpdate.Second}Z&flag=0");
